@@ -1,0 +1,9 @@
+'model_year'
+1.837
+
+150
+10
+
+vehicle_weight
+
+0.1
