@@ -1,21 +1,21 @@
-# استخدام صورة بايثون أساسية خفيفة
+# Use an official lightweight Python image
 FROM python:3.11-slim
 
-# تحديد مجلد العمل داخل الحاوية
+# Set working directory inside the container
 WORKDIR /app
 
-# نسخ ملف متطلبات المشروع
+# Copy project requirements
 COPY requirements.txt .
 
-# تثبيت المكتبات المطلوبة
+# Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# نسخ باقي ملفات المشروع الأساسية
+# Copy the trained model and prediction service
 COPY churn_xgb_model.bin .
 COPY predict.py .
 
-# فتح المنفذ 9696
+# Expose port 9696
 EXPOSE 9696
 
-# تشغيل الخادم عند بدء الحاوية
+# Start the web server on container startup
 CMD ["uvicorn", "predict:app", "--host", "0.0.0.0", "--port", "9696"]

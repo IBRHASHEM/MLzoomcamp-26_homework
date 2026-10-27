@@ -1,19 +1,18 @@
 import pickle
-import xgboost as xgb # أو استورد ما تحتاجه للوجستي
+import xgboost as xgb
 from fastapi import FastAPI
 from pydantic import BaseModel
 import re
 
-# 1. تهيئة تطبيق FastAPI
+# 1. Initialize FastAPI application
 app = FastAPI(title="Churn Prediction API")
 
-# 2. تحميل النموذج
+# 2. Load serialized DictVectorizer and trained XGBoost model
 model_file = 'churn_xgb_model.bin'
 with open(model_file, 'rb') as f_in:
     dv, model = pickle.load(f_in)
 
-# 3. إعداد الـ Schema المتوقعة للعميل (بناءً على الأعمدة الخاصة بك)
-# كمثال، استخدمت بيانات العملاء التي أرسلتها مسبقاً
+# 3. Define customer input schema using Pydantic
 class Customer(BaseModel):
     geography: str
     gender: str
@@ -30,34 +29,34 @@ class Customer(BaseModel):
     estimatedsalary: float
     point_earned: int
 
-# 4. نقطة نهاية أساسية للتأكد من حالة السيرفر
+# 4. Health check endpoint
 @app.get("/health")
 def health():
     return {"status": "ok"}
 
-# 5. نقطة التنبؤ الرئيسية
+# 5. Main prediction endpoint
 @app.post("/predict")
 def predict(customer: Customer):
-    # تحويل كائن العميل إلى قاموس
+    # Convert Pydantic customer object to dictionary
     customer_dict = customer.model_dump()
     
-    # تحويل البيانات الفئوية لنصوص (إذا لم تكن كذلك)
+    # Cast categorical features to string as done during training
     categorical = ['geography', 'gender', 'hascrcard', 'isactivemember', 'complain', 'satisfaction_score', 'card_type']
     for col in categorical:
         customer_dict[col] = str(customer_dict.get(col, 'NA'))
         
-    # تشفير العميل
+    # Encode features using DictVectorizer
     X = dv.transform([customer_dict])
     
-    # تنظيف الأعمدة إذا كنت تستخدم XGBoost
+    # Clean feature names for XGBoost compatibility
     feature_names = dv.get_feature_names_out().tolist()
     clean_feature_names = [re.sub(r'[\[\]<>=]', '_', f) for f in feature_names]
     dmatrix = xgb.DMatrix(X, feature_names=clean_feature_names)
     
-    # التنبؤ بالاحتمالية
+    # Predict churn probability
     prob = float(model.predict(dmatrix)[0])
     
-    # تجهيز رد JSON
+    # Prepare JSON response
     return {
         "churn_probability": prob,
         "will_churn": bool(prob >= 0.5)
