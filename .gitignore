@@ -1,0 +1,7 @@
+.zoomLM/
+zoomLM/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+*.csv
+*.mp4
