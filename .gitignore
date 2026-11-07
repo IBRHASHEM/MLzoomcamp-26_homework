@@ -5,3 +5,4 @@ __pycache__/
 .ipynb_checkpoints/
 *.csv
 *.mp4
+!07-Midterm/stroke-prediction/healthcare-dataset-stroke-data_manipulated.csv
