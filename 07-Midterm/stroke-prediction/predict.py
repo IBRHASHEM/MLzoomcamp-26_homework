@@ -3,8 +3,7 @@ import pickle
 import math
 import re
 
-from flask import Flask, request, jsonify
-
+from flask import Flask, request, jsonify, render_template
 
 # --------------------------------------------------
 # 1. Load trained model package
@@ -33,6 +32,21 @@ bmi_upper_cap = package["bmi_upper_cap"]
 
 app = Flask("stroke-prediction")
 
+# --------------------------------------------------
+# 3. Web Interface and Health Check
+# --------------------------------------------------
+
+@app.route("/", methods=["GET"])
+def home():
+    return render_template("index.html")
+
+
+@app.route("/healthz", methods=["GET"])
+def health_check():
+    return jsonify({
+        "status": "healthy",
+        "model": package["model_name"]
+    }), 200
 
 # --------------------------------------------------
 # 3. Preprocess incoming patient data
@@ -95,7 +109,43 @@ def preprocess_patient(patient):
 
     return processed
 
+# --------------------------------------------------
+# Web Form Prediction
+# --------------------------------------------------
 
+@app.route("/predict-form", methods=["POST"])
+def predict_form():
+
+    patient = request.form.to_dict()
+
+    try:
+        processed_patient = preprocess_patient(patient)
+
+        X = dv.transform([processed_patient])
+
+        probability = float(
+            model.predict_proba(X)[0, 1]
+        )
+
+        prediction = int(probability >= threshold)
+
+        result = {
+            "stroke_probability": probability,
+            "stroke_prediction": prediction,
+            "threshold": threshold,
+            "model": package["model_name"],
+        }
+
+        return render_template(
+            "index.html",
+            result=result
+        )
+
+    except ValueError as error:
+        return render_template(
+            "index.html",
+            error=str(error)
+        ), 400
 # --------------------------------------------------
 # 4. Prediction endpoint
 # --------------------------------------------------
