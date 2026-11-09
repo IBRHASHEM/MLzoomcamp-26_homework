@@ -1,3 +1,4 @@
+
 FROM python:3.14-slim
 
 WORKDIR /app
@@ -10,6 +11,6 @@ COPY stroke_prediction_model.bin .
 COPY templates/ ./templates/
 COPY static/ ./static/
 
-EXPOSE 10000
+EXPOSE 9696
 
-CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT:-10000} --workers 1 --threads 2 --timeout 120 predict:app"]
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT:-9696} --workers 1 --threads 2 --timeout 120 predict:app"]
