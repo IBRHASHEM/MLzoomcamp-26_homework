@@ -4,145 +4,194 @@
 
 ## 1. Project Overview
 
-This project develops an end-to-end machine learning classification system to estimate the likelihood of stroke based on patient demographic information and health indicators.
+This project builds an end-to-end machine learning classification application that estimates the probability of stroke based on demographic information and health-related indicators.
 
-The project demonstrates a complete machine learning workflow, including:
+The project covers the main stages of a practical machine learning workflow:
 
-- Data exploration and analysis (EDA).
+- Exploratory Data Analysis (EDA).
 - Data cleaning and preprocessing.
 - Feature engineering and encoding.
-- Training multiple classification models.
+- Training and comparing classification models.
 - Hyperparameter tuning.
-- Model comparison and selection.
-- Decision threshold optimization.
-- Final evaluation on a held-out test dataset.
-- Model serialization.
-- REST API development using Flask.
-- Containerization and deployment using Docker.
+- Model selection using validation ROC AUC.
+- Decision-threshold optimization using validation F1 score.
+- Final evaluation on a held-out test set.
+- Model serialization and reload verification.
+- A Flask web application and REST API.
+- Docker containerization.
 
-**Disclaimer:** This project is for educational purposes only. It is not intended for medical diagnosis, clinical screening, treatment decisions, or emergency decision-making.
+> **Important:** This is an educational machine learning project. It is not a medical device and must not be used for diagnosis, clinical screening, treatment decisions, or emergency decision-making.
 
-## 2. Dataset
+## 2. Problem Definition
+
+### Problem
+
+Stroke is a serious health condition, and identifying patterns associated with stroke records is a useful machine learning classification exercise. The goal of this project is to build a model that uses available patient attributes to estimate whether a record belongs to the positive stroke class.
+
+The target variable is `stroke`:
+
+- `0`: No stroke recorded.
+- `1`: Stroke recorded.
+
+### Project Objectives
+
+1. Explore the available patient data and understand its features.
+2. Prepare the data for machine learning, including handling missing values.
+3. Train and compare several classification algorithms.
+4. select a model using validation performance.
+5. Choose a decision threshold based on validation F1 score.
+6. Evaluate the final model on data kept separate from training and model selection.
+7. make the trained model available through a simple web interface and JSON API.
+
+### Proposed Solution
+
+The project uses a supervised binary-classification workflow. It evaluates Logistic Regression, Decision Tree, Random Forest, and XGBoost, then selects the candidate with the strongest validation ROC AUC. A separate validation-based threshold is used to convert predicted probabilities into class predictions.
+
+The selected model and its preprocessing information are saved together so the prediction application can apply the same transformations to incoming patient data.
+
+### Expected System
+
+The delivered application provides:
+
+- A browser-based form for entering patient attributes.
+- A JSON endpoint for programmatic predictions.
+- A predicted stroke probability and a class prediction based on the selected threshold.
+- A health-check endpoint to verify that the application is running.
+
+The output is a model estimate based on this dataset, not a clinical assessment or recommendation.
+
+## 3. Dataset
 
 The project uses a manipulated version of the Stroke Prediction dataset.
 
-**Dataset information:**
+| Dataset property | Value |
+|---|---:|
+| Records | 4,909 |
+| Columns | 12 |
+| Target | `stroke` |
 
-- Total records: 4,909
-- Total columns: 12
-- Target variable: `stroke`
+**Dataset filename:** `healthcare-dataset-stroke-data_manipulated.csv`
 
-The dataset contains the following features:
+The dataset is available in the `07-Midterm` directory, with a copy inside the `stroke-prediction` project directory.
+
+### Features
 
 | Feature | Description |
 |---|---|
-| gender | Patient gender |
-| age | Patient age |
-| hypertension | Hypertension indicator |
-| heart_disease | Heart disease indicator |
-| ever_married | Marital status |
-| work_type | Type of employment |
-| Residence_type | Urban or rural residence |
-| avg_glucose_level | Average glucose level |
-| bmi | Body Mass Index |
-| smoking_status | Smoking category |
-| id | Record identifier, excluded from model predictors |
-| stroke | Target variable |
+| `gender` | Patient gender |
+| `age` | Patient age |
+| `hypertension` | Hypertension indicator |
+| `heart_disease` | Heart disease indicator |
+| `ever_married` | Marital status |
+| `work_type` | Type of employment |
+| `Residence_type` | Urban or rural residence in the source dataset |
+| `avg_glucose_level` | Average glucose level |
+| `bmi` | Body Mass Index |
+| `smoking_status` | Smoking category |
+| `id` | Record identifier; excluded from model predictors |
+| `stroke` | Target variable |
 
-**Dataset filename:**
+The training pipeline normalizes column names to lowercase and replaces spaces with underscores. Therefore, the API field corresponding to the source column `Residence_type` is **`residence_type`**.
 
-`healthcare-dataset-stroke-data_manipulated.csv`
+**Dataset note:** The supplied dataset is a manipulated version used for this educational project. Its class distribution should not be interpreted as the real-world prevalence of stroke.
 
-The dataset is included in the `07-Midterm` directory and a copy is also available inside the `stroke-prediction` project directory.
+## 4. Machine Learning Workflow
 
-**Dataset paths:**
-
-- Training script: reads the dataset from the parent `07-Midterm` directory.
-- Notebook: the notebook instructions specify placing the dataset in the same directory as the notebook.
-
-## 3. Machine Learning Workflow
-
-The project follows a structured and reproducible machine learning workflow.
+The project follows a structured workflow:
 
 1. Load and inspect the dataset.
-2. Perform initial data quality checks.
-3. Explore the target variable and predictor distributions.
-4. Perform exploratory data analysis (EDA).
-5. Split the dataset into training, validation, and test sets.
-6. Handle missing values using training-set statistics.
-7. Apply BMI cleaning using a fixed upper cap of 60.
-8. Encode categorical and numerical features using `DictVectorizer`.
-9. Train multiple classification models.
-10. Tune model hyperparameters using validation data.
-11. Compare candidate models using validation ROC AUC.
-12. Select the best-performing model.
+2. Check data quality and missing values.
+3. Explore the target and predictor distributions.
+4. Perform exploratory data analysis.
+5. Split the data into training, validation, and test sets using stratification.
+6. Calculate imputation values from the training data.
+7. Apply the BMI upper cap of 60.
+8. Encode the input features using `DictVectorizer`.
+9. Train candidate classification models.
+10. Tune hyperparameters for Decision Tree, Random Forest, and XGBoost.
+11. Compare models using validation ROC AUC.
+12. Select the best-performing candidate.
 13. Optimize the classification threshold using validation F1 score.
 14. Evaluate the selected model on the held-out test set.
-15. Inspect feature importance.
-16. Save and reload the trained model package.
-17. Integrate the model with a Flask prediction API.
-18. Build and run the application using Docker.
+15. Save the estimator, fitted vectorizer, threshold, and preprocessing metadata.
+16. Reload the saved package and verify prediction consistency.
+17. Serve predictions through Flask.
+18. Build and run the application in Docker.
 
-### Data Splitting
+### Data Split
 
-The dataset is divided using stratified splitting:
+The data is divided using stratified splitting with `random_state=42`.
 
-| Dataset | Percentage |
+| Dataset | Share |
 |---|---:|
 | Training | 60% |
 | Validation | 20% |
 | Test | 20% |
 
-The test dataset is reserved for final evaluation and is not used for model selection or threshold tuning.
+The test set is reserved for final evaluation. It is not used for model selection or threshold optimization.
 
-## 4. Models Evaluated
+### Preprocessing
 
-Four classification algorithms were trained and compared:
+- Missing numerical values are imputed using statistics calculated from the training set.
+- Missing categorical values are imputed using the training-set categorical modes.
+- BMI values are capped at an upper limit of 60.
+- Categorical values are normalized before encoding.
+- `DictVectorizer` transforms the feature dictionaries into model-ready vectors.
+- The `id` column is excluded from the predictors.
+
+## 5. Models Evaluated
+
+The following classification algorithms were evaluated:
 
 - Logistic Regression
 - Decision Tree
 - Random Forest
 - XGBoost
 
-Hyperparameter tuning was performed for Decision Tree, Random Forest, and XGBoost. Logistic Regression was used as the baseline model.
+Hyperparameter tuning was performed for Decision Tree, Random Forest, and XGBoost. Logistic Regression was included as a baseline.
 
-### Validation ROC AUC Comparison
+### Validation ROC AUC
 
 | Model | Validation ROC AUC |
 |---|---:|
-| XGBoost | 0.9838 |
+| XGBoost | 0.9837 |
 | Random Forest | 0.9831 |
 | Decision Tree | 0.9779 |
 | Logistic Regression | 0.9715 |
 
-**Selected model:** XGBoost
+**Selected model: XGBoost**
 
-**Selected decision threshold:** 0.45
+The final candidate was selected based on validation ROC AUC.
 
-The model was selected based on validation ROC AUC. The classification threshold was selected by maximizing validation F1 score.
+## 6. Decision Threshold Optimization
 
-## 5. Final Model Performance
+A probability threshold of **0.45** was selected using the validation set by maximizing the F1 score.
 
-The selected XGBoost model was evaluated on the held-out test dataset.
+| Metric | Validation result |
+|---|---:|
+| Threshold | 0.45 |
+| Precision | 0.984 |
+| Recall | 0.895 |
+| F1 Score | 0.938 |
 
-### Test Metrics
+The threshold determines how predicted probabilities are converted into class labels. It was selected using validation data and then kept fixed for the final test evaluation.
 
-| Metric | Test Result |
+## 7. Final Model Performance
+
+The selected XGBoost model was evaluated on the held-out test dataset using the selected threshold.
+
+| Metric | Test result |
 |---|---:|
 | ROC AUC | 0.9898 |
 | Accuracy | 0.9807 |
 | Precision | 0.9657 |
 | Recall | 0.9426 |
 | F1 Score | 0.9540 |
-| Decision Threshold | 0.45 |
+| Decision Threshold | 0.450 |
 
-**Selected model:** XGBoost
+These results describe this project's specific test split only. They do not establish clinical effectiveness or guarantee performance on other datasets or populations.
 
-These metrics represent the results obtained from this project's specific test split. They should not be interpreted as evidence of clinical effectiveness or generalization to other populations.
-
-## 6. Project Screenshots
-
-The following screenshots demonstrate the project workflow and deployment.
+## 8. Project Screenshots
 
 ### Exploratory Data Analysis
 
@@ -152,11 +201,11 @@ The following screenshots demonstrate the project workflow and deployment.
 
 ![API Prediction](screenshots/02-api-prediction.png)
 
-### Docker Deployment
+### Docker Container
 
 ![Docker Deployment](screenshots/03-docker-container.png)
 
-## 7. Project Structure
+## 9. Project Structure
 
 ```text
 MLzoomcamp-26_homework/
@@ -175,7 +224,10 @@ MLzoomcamp-26_homework/
         ├── requirements.txt
         ├── Dockerfile
         ├── README.md
-        │
+        ├── templates/
+        │   └── index.html
+        ├── static/
+        │   └── style.css
         └── screenshots/
             ├── 01-eda-analysis.png
             ├── 02-api-prediction.png
@@ -186,15 +238,17 @@ MLzoomcamp-26_homework/
 
 | File | Purpose |
 |---|---|
-| `notebook.ipynb` | Exploratory analysis, model experiments, evaluation, and documentation |
-| `train.py` | Reproducible model training and serialization |
-| `predict.py` | Flask REST API for model predictions |
-| `stroke_prediction_model.bin` | Serialized model package |
+| `notebook.ipynb` | Exploratory analysis, experiments, and evaluation |
+| `train.py` | Data preparation, model training, evaluation, and serialization |
+| `predict.py` | Flask application, preprocessing for incoming requests, and prediction endpoints |
+| `stroke_prediction_model.bin` | Serialized model package and preprocessing metadata |
+| `templates/index.html` | Web application interface |
+| `static/style.css` | Web interface styling |
 | `requirements.txt` | Python dependencies |
 | `Dockerfile` | Docker image configuration |
 | `screenshots/` | Project screenshots |
 
-## 8. Technologies Used
+## 10. Technologies Used
 
 - Python
 - Pandas
@@ -206,58 +260,74 @@ MLzoomcamp-26_homework/
 - Flask
 - Gunicorn
 - Docker
-- GitHub Codespaces
 - Jupyter Notebook
+- GitHub Codespaces
 
-## 9. Environment Setup
+## 11. Environment Setup
 
 ### Prerequisites
 
-- Python 3.11 or a compatible Python version.
+- Python version compatible with the pinned dependencies in `requirements.txt`.
 - pip.
-- Docker (for containerized deployment).
+- Docker, if you want to run the containerized application.
 - GitHub Codespaces or a local development environment.
 
 ### Install Dependencies
 
-From the `stroke-prediction` directory, run:
+Open a terminal in the `stroke-prediction` directory and run:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## 10. Training the Model
+## 12. Training the Model
 
 The training script reads the dataset from the parent `07-Midterm` directory.
 
-From the `stroke-prediction` directory, execute:
+From the `stroke-prediction` directory, run:
 
 ```bash
 python train.py
 ```
 
-The script performs the following operations:
+The script prepares the data, trains and compares the models, selects the best candidate using validation ROC AUC, chooses a threshold using validation F1, evaluates the selected model on the test set, and saves the model package.
 
-1. Loads the dataset.
-2. Splits the data into training, validation, and test sets.
-3. Performs preprocessing and feature encoding.
-4. Trains and compares the classification models.
-5. Selects the best model using validation ROC AUC.
-6. Selects the decision threshold using validation F1 score.
-7. Evaluates the selected model on the test dataset.
-8. Saves the trained model package.
-
-The resulting model package is saved as:
+The output file is:
 
 ```text
 stroke_prediction_model.bin
 ```
 
-## 11. Running the API with Docker
+## 13. Running the Application Locally
 
-The Flask application is served using Gunicorn inside a Docker container.
+From the `stroke-prediction` directory, run:
 
-### Build the Docker Image
+```bash
+python predict.py
+```
+
+The Flask application listens on port `9696`.
+
+Open the web interface:
+
+```text
+http://localhost:9696/
+```
+
+### Application Endpoints
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| GET | `/` | Web prediction interface |
+| GET | `/healthz` | Application health check |
+| POST | `/predict-form` | Prediction submitted from the web form |
+| POST | `/predict` | JSON prediction API |
+
+## 14. Running the Application with Docker
+
+The Docker image runs the Flask application using Gunicorn. The container listens on port `10000`; the example below maps host port `9696` to container port `10000`.
+
+### Build the Image
 
 From the `stroke-prediction` directory:
 
@@ -270,55 +340,43 @@ docker build -t stroke-prediction:latest .
 ```bash
 docker run -d \
   --name stroke-prediction-api \
-  -p 9696:9696 \
+  -p 9696:10000 \
   stroke-prediction:latest
 ```
 
-### Check Container Status
+### Check the Container
 
 ```bash
 docker ps
-```
-
-### Check Application Logs
-
-```bash
 docker logs stroke-prediction-api
 ```
 
-### Stop the Container
+### Test the Health Endpoint
+
+```bash
+curl http://localhost:9696/healthz
+```
+
+### Stop and Remove the Container
 
 ```bash
 docker stop stroke-prediction-api
-```
-
-### Remove the Container
-
-```bash
 docker rm stroke-prediction-api
 ```
 
 If the container name is already in use, stop and remove the existing container before creating another one.
 
-## 12. API Usage
+## 15. API Usage
 
-The application exposes a REST API endpoint for stroke prediction.
-
-**HTTP Method:** `POST`
-
-**Endpoint:**
-
-```text
-/predict
-```
-
-**Local URL:**
+The JSON prediction endpoint accepts a `POST` request at:
 
 ```text
 http://localhost:9696/predict
 ```
 
 ### Example JSON Request
+
+Use lowercase field names, including `residence_type`:
 
 ```json
 {
@@ -346,7 +404,7 @@ http://localhost:9696/predict
 }
 ```
 
-### Test the API Using cURL
+### Test with cURL
 
 ```bash
 curl -X POST http://localhost:9696/predict \
@@ -365,51 +423,52 @@ curl -X POST http://localhost:9696/predict \
   }'
 ```
 
-### API Response Interpretation
+### Response Fields
 
 | Field | Description |
 |---|---|
-| model | Selected machine learning model |
-| stroke_prediction | Predicted class (0 or 1) |
-| stroke_probability | Estimated probability of the positive class |
-| threshold | Decision threshold used for classification |
+| `model` | Selected machine learning model |
+| `stroke_prediction` | Predicted class: 0 or 1 |
+| `stroke_probability` | Estimated probability of the positive class |
+| `threshold` | Decision threshold used to determine the predicted class |
 
-The API was successfully tested locally and inside the Docker container.
+## 16. Reproducibility
 
-## 13. Reproducibility
+To reproduce the workflow:
 
-To reproduce the project:
-
-1. Clone or download the project repository.
-2. Ensure the dataset is available in the expected location.
-3. Install dependencies using `requirements.txt`.
+1. Clone the repository.
+2. Ensure the dataset is available at the expected relative path.
+3. Install the dependencies.
 4. Run `train.py` from the `stroke-prediction` directory.
 5. Build the Docker image.
-6. Run the Docker container.
-7. Send a POST request to the `/predict` endpoint.
+6. Run the container.
+7. Send a POST request to `/predict` or use the web interface.
 
-The training script uses a fixed random seed to support reproducible data splitting and experiments.
+The training workflow uses a fixed random seed for data splitting. The saved model package includes the fitted vectorizer, selected threshold, and preprocessing metadata required by the prediction application.
 
-## 14. Limitations and Future Improvements
+A reload check in the notebook verified that the saved and reloaded model package produced the same probability for the checked sample.
 
-### Current Limitations
+## 17. Limitations and Future Improvements
 
-- The dataset represents a specific collection of records and may not represent all populations.
-- High evaluation scores do not guarantee real-world performance.
-- The model may be affected by dataset bias, missing information, and class imbalance.
-- Feature importance does not establish causal relationships.
-- The selected threshold is based on validation F1 score, not clinical requirements.
-- The API is an educational demonstration and is not designed or validated for clinical use.
+### Limitations
 
-### Possible Future Improvements
+- The dataset is a manipulated dataset for an educational exercise and may not represent real-world populations.
+- A high score on one held-out split does not guarantee generalization.
+- Dataset bias, missing information, and class imbalance can affect model behavior.
+- Feature importance describes model associations; it does not establish causation.
+- The threshold was optimized for validation F1, not for clinical decision-making.
+- The application has not been clinically validated and is not intended for medical use.
 
-- Further investigate dataset quality and potential data leakage.
-- Evaluate model calibration and generalization on independent datasets.
-- Perform more detailed fairness and subgroup analysis.
-- Improve API validation, logging, and error handling.
-- Deploy the application to a cloud platform.
+### Future Improvements
 
-## 15. Author
+- Investigate data quality and potential data leakage in greater depth.
+- Evaluate calibration and generalization using independent datasets.
+- Perform fairness and subgroup performance analysis.
+- Expand automated tests and API input-validation coverage.
+- Improve production logging, monitoring, and operational security.
+- Consider cloud deployment as a future step.
+
+## 18. Author
 
 **Ibrahim Hashem**
 
@@ -417,6 +476,6 @@ Machine Learning Zoomcamp 2026 — Midterm Project
 
 ---
 
-**Medical and Ethical Disclaimer**
+## Medical and Ethical Disclaimer
 
-This project is intended exclusively for educational and learning purposes. The predictions generated by this model are not medical advice and must not be used for diagnosis, screening, treatment, or emergency decisions. Always consult qualified healthcare professionals for medical evaluation.
+This project is intended exclusively for educational purposes. Its predictions are estimates produced by a machine learning model and are not medical advice. They must not be used for diagnosis, screening, treatment, or emergency decisions. Consult qualified healthcare professionals for medical evaluation.
