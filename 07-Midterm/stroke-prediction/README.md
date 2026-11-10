@@ -19,6 +19,7 @@ The project covers the main stages of a practical machine learning workflow:
 - Model serialization and reload verification.
 - A Flask web application and REST API.
 - Docker containerization.
+- Public demo access through GitHub Codespaces port forwarding.
 
 > **Important:** This is an educational machine learning project. It is not a medical device and must not be used for diagnosis, clinical screening, treatment decisions, or emergency decision-making.
 
@@ -393,7 +394,7 @@ http://localhost:9696/
 
 ## 14. Running the Application with Docker
 
-The Docker image runs the Flask application using Gunicorn. The container listens on port `10000`; the example below maps host port `9696` to container port `10000`.
+The Docker image runs the Flask application using Gunicorn. The container listens on port `9696`.
 
 ### Build the Image
 
@@ -406,9 +407,9 @@ docker build -t stroke-prediction:latest .
 ### Run the Container
 
 ```bash
-docker run -d \
-  --name stroke-prediction-api \
-  -p 9696:10000 \
+docker run -d \\
+  --name stroke-prediction-api \\
+  -p 9696:9696 \\
   stroke-prediction:latest
 ```
 
@@ -434,7 +435,53 @@ docker rm stroke-prediction-api
 
 If the container name is already in use, stop and remove the existing container before creating another one.
 
-## 15. API Usage
+## 15. Public Demo Deployment — GitHub Codespaces
+
+The application was successfully exposed to the internet using GitHub Codespaces port forwarding. The Flask application runs inside a Docker container, and Codespaces forwards a public HTTPS address to the container port.
+
+**Live demo:** [Open the Stroke Prediction Web Application](https://glorious-space-waddle-4jr7r5q4jw5rhqjrq-9697.app.github.dev/)
+
+**Health check:** [Check API health](https://glorious-space-waddle-4jr7r5q4jw5rhqjrq-9697.app.github.dev/healthz)
+
+### Deployment Configuration
+
+| Component | Configuration |
+|---|---|
+| Development and hosting environment | GitHub Codespaces |
+| Container | Docker |
+| Application server | Flask with Gunicorn |
+| Container listening port | `9696` |
+| Forwarded Codespaces port | `9697` |
+| Port visibility | Public |
+| Public protocol | HTTPS |
+
+### Deployment Verification
+
+The public health-check endpoint returned HTTP 200 with:
+
+```json
+{
+  "model": "XGBoost",
+  "status": "healthy"
+}
+```
+
+The public JSON prediction endpoint was also tested successfully using an external HTTPS request to `/predict`. The response was HTTP 200:
+
+```json
+{
+  "model": "XGBoost",
+  "stroke_prediction": 1,
+  "stroke_probability": 0.9906,
+  "threshold": 0.45
+}
+```
+
+This confirms that both the health-check and prediction endpoints were reachable through the public Codespaces URL at the time of testing.
+
+> **Availability and security note:** This is a temporary demonstration deployment, not a permanent production hosting service. The Codespace must remain running, and the forwarded port must remain publicly accessible. Public port forwarding makes the application reachable by anyone who has the URL. Do not submit real patient or other sensitive personal data to this demo. The sample prediction above is for software testing only and is not a medical assessment.
+
+## 16. API Usage
 
 The JSON prediction endpoint accepts a `POST` request at:
 
@@ -475,8 +522,8 @@ Use lowercase field names, including `residence_type`:
 ### Test with cURL
 
 ```bash
-curl -X POST http://localhost:9696/predict \
-  -H "Content-Type: application/json" \
+curl -X POST http://localhost:9696/predict \\
+  -H "Content-Type: application/json" \\
   -d '{
     "gender": "female",
     "age": 67,
@@ -500,7 +547,7 @@ curl -X POST http://localhost:9696/predict \
 | `stroke_probability` | Estimated probability of the positive class |
 | `threshold` | Decision threshold used to determine the predicted class |
 
-## 16. Reproducibility
+## 17. Reproducibility
 
 To reproduce the workflow:
 
@@ -516,7 +563,7 @@ The training workflow uses a fixed random seed for data splitting. The saved mod
 
 A reload check in the notebook verified that the saved and reloaded model package produced the same probability for the checked sample.
 
-## 17. Limitations and Future Improvements
+## 18. Limitations and Future Improvements
 
 ### Limitations
 
@@ -526,6 +573,7 @@ A reload check in the notebook verified that the saved and reloaded model packag
 - Feature importance describes model associations; it does not establish causation.
 - The threshold was optimized for validation F1, not for clinical decision-making.
 - The application has not been clinically validated and is not intended for medical use.
+- The public Codespaces demo is temporary and is not designed for production workloads.
 
 ### Future Improvements
 
@@ -534,9 +582,9 @@ A reload check in the notebook verified that the saved and reloaded model packag
 - Perform fairness and subgroup performance analysis.
 - Expand automated tests and API input-validation coverage.
 - Improve production logging, monitoring, and operational security.
-- Consider cloud deployment as a future step.
+- Deploy the application to a persistent cloud hosting platform when a suitable hosting option is available.
 
-## 18. Author
+## 19. Author
 
 **Ibrahim Hashem**
 
