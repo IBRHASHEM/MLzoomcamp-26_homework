@@ -32,6 +32,22 @@ bmi_upper_cap = package["bmi_upper_cap"]
 
 app = Flask("stroke-prediction")
 
+# Allow the GitHub Pages frontend to call this API from the browser.
+ALLOWED_ORIGINS = {"https://ibrhashem.github.io"}
+
+
+@app.after_request
+def add_cors_headers(response):
+    origin = request.headers.get("Origin")
+
+    if origin in ALLOWED_ORIGINS:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Vary"] = "Origin"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+
+    return response
+
 # --------------------------------------------------
 # 3. Web Interface and Health Check
 # --------------------------------------------------
