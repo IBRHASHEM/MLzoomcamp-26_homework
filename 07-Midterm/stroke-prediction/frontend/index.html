@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Educational stroke prediction demonstration using a machine learning model.">
+  <title>Stroke Prediction | ML Zoomcamp 2026</title>
+  <link rel="stylesheet" href="./style.css">
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <main class="container">
+    <header class="page-header">
+      <div class="logo" aria-hidden="true">SP</div>
+      <h1>Stroke Prediction</h1>
+      <p>Machine Learning Risk Prediction System</p>
+      <span class="hosting-label">Frontend hosted on GitHub Pages</span>
+    </header>
+
+    <section class="form-card">
+      <div class="section-heading">
+        <h2>Patient Information</h2>
+        <p>Enter the information below to request a prediction from the model API.</p>
+      </div>
+
+      <form id="prediction-form">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="age">Age</label>
+            <input type="number" id="age" name="age" min="0" max="120" step="any" placeholder="e.g. 67" required>
+          </div>
+          <div class="form-group">
+            <label for="gender">Gender</label>
+            <select id="gender" name="gender" required>
+              <option value="">Select gender</option>
+              <option value="female">Female</option>
+              <option value="male">Male</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="ever_married">Ever Married</label>
+            <select id="ever_married" name="ever_married" required>
+              <option value="">Select an option</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="work_type">Work Type</label>
+            <select id="work_type" name="work_type" required>
+              <option value="">Select work type</option>
+              <option value="private">Private</option>
+              <option value="self-employed">Self-employed</option>
+              <option value="govt_job">Government Job</option>
+              <option value="children">Children</option>
+              <option value="never_worked">Never Worked</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="hypertension">Hypertension</label>
+            <select id="hypertension" name="hypertension" required>
+              <option value="">Select an option</option>
+              <option value="0">No</option>
+              <option value="1">Yes</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="heart_disease">Heart Disease</label>
+            <select id="heart_disease" name="heart_disease" required>
+              <option value="">Select an option</option>
+              <option value="0">No</option>
+              <option value="1">Yes</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="avg_glucose_level">Average Glucose Level</label>
+            <input type="number" id="avg_glucose_level" name="avg_glucose_level" min="0" step="any" placeholder="e.g. 120.5" required>
+          </div>
+          <div class="form-group">
+            <label for="bmi">BMI</label>
+            <input type="number" id="bmi" name="bmi" min="0" step="any" placeholder="e.g. 28.4" required>
+          </div>
+          <div class="form-group">
+            <label for="residence_type">Residence Type</label>
+            <select id="residence_type" name="residence_type" required>
+              <option value="">Select residence</option>
+              <option value="urban">Urban</option>
+              <option value="rural">Rural</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="smoking_status">Smoking Status</label>
+            <select id="smoking_status" name="smoking_status" required>
+              <option value="">Select smoking status</option>
+              <option value="never_smoked">Never Smoked</option>
+              <option value="formerly_smoked">Formerly Smoked</option>
+              <option value="smokes">Smokes</option>
+              <option value="unknown">Unknown</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" class="submit-button" id="submit-button">Predict Stroke Risk</button>
+      </form>
+
+      <div id="message" class="message" role="status" aria-live="polite" hidden></div>
+      <section id="result" class="result-card" aria-live="polite" hidden>
+        <h2>Prediction Result</h2>
+        <div id="probability" class="probability"></div>
+        <p id="result-label" class="result-label"></p>
+        <p id="result-detail" class="result-detail"></p>
+      </section>
+    </section>
+
+    <footer>
+      <p>Educational demonstration only. This tool is not intended for medical diagnosis or treatment decisions.</p>
+      <p>Machine Learning Zoomcamp 2026 — Midterm Project</p>
+    </footer>
+  </main>
+</body>
+</html>
