@@ -2,6 +2,15 @@
 
 **Machine Learning Zoomcamp 2026**
 
+## Live Demo
+
+- **GitHub Pages — Stroke Prediction Interface:** [Open the web application](https://ibrhashem.github.io/MLzoomcamp-26_homework/)
+- **GitHub Actions — Pages deployment:** [View deployment workflow](https://github.com/IBRHASHEM/MLzoomcamp-26_homework/actions/workflows/deploy-stroke-pages.yml)
+
+> **Demo status:** The static frontend is published on GitHub Pages. Prediction requests depend on the separate Flask API running in GitHub Codespaces with its forwarded port publicly accessible. The interface may load even when the API is unavailable; prediction functionality is currently being checked.
+
+
+
 ## 1. Project Overview
 
 This project builds an end-to-end machine learning classification application that estimates the probability of stroke based on demographic information and health-related indicators.
