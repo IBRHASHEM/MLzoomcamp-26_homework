@@ -197,9 +197,11 @@ These results describe this project's specific test split only. They do not esta
 
 ![EDA Analysis](screenshots/01-eda-analysis.png)
 
-### API Prediction
+### Prediction Web Interface – Live Test
 
-![API Prediction](screenshots/02-api-prediction.png)
+![Prediction Web Interface](screenshots/02-api-prediction.png)
+
+The screenshot demonstrates a successful prediction through the running web application. The application URL shown in the browser indicates access to the running interface; it should not be interpreted as proof of a separate cloud deployment.
 
 ### Docker Container
 
