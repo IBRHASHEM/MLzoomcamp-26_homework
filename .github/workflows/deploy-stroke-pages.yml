@@ -6,6 +6,7 @@ on:
     paths:
       - "07-Midterm/stroke-prediction/frontend/**"
       - ".github/workflows/deploy-stroke-pages.yml"
+      - ".github/workflows/static.yml"
   workflow_dispatch:
 
 permissions:
