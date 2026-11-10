@@ -481,7 +481,25 @@ This confirms that both the health-check and prediction endpoints were reachable
 
 > **Availability and security note:** This is a temporary demonstration deployment, not a permanent production hosting service. The Codespace must remain running, and the forwarded port must remain publicly accessible. Public port forwarding makes the application reachable by anyone who has the URL. Do not submit real patient or other sensitive personal data to this demo. The sample prediction above is for software testing only and is not a medical assessment.
 
-## 16. API Usage
+## 16. Static Frontend — GitHub Pages
+
+The browser interface is also available as a static website deployed through GitHub Pages. The static frontend is stored in `frontend/` and communicates with the Flask prediction API over HTTPS.
+
+**GitHub Pages URL:** https://ibrhashem.github.io/MLzoomcamp-26_homework/
+
+The frontend deployment is automated by `.github/workflows/deploy-stroke-pages.yml`. A push that changes the frontend files triggers the deployment workflow.
+
+**Architecture:**
+- GitHub Pages hosts the static HTML, CSS, and JavaScript interface.
+- The existing Flask API continues to load and run the trained XGBoost model.
+- The frontend sends JSON requests to the Codespaces API endpoint.
+- The API allows browser requests from the GitHub Pages origin through a restricted CORS policy.
+
+**Important:** GitHub Pages does not host or execute the Python API or model. The Codespaces API must remain running and its forwarded port must remain public for predictions to work. The Pages website may load while predictions are unavailable if the Codespace is stopped.
+
+Before the first deployment, enable GitHub Pages in the repository settings and select **GitHub Actions** as the deployment source.
+
+## 17. API Usage
 
 The JSON prediction endpoint accepts a `POST` request at:
 
@@ -547,7 +565,7 @@ curl -X POST http://localhost:9696/predict \\
 | `stroke_probability` | Estimated probability of the positive class |
 | `threshold` | Decision threshold used to determine the predicted class |
 
-## 17. Reproducibility
+## 18. Reproducibility
 
 To reproduce the workflow:
 
@@ -563,7 +581,7 @@ The training workflow uses a fixed random seed for data splitting. The saved mod
 
 A reload check in the notebook verified that the saved and reloaded model package produced the same probability for the checked sample.
 
-## 18. Limitations and Future Improvements
+## 19. Limitations and Future Improvements
 
 ### Limitations
 
@@ -584,7 +602,7 @@ A reload check in the notebook verified that the saved and reloaded model packag
 - Improve production logging, monitoring, and operational security.
 - Deploy the application to a persistent cloud hosting platform when a suitable hosting option is available.
 
-## 19. Author
+## 20. Author
 
 **Ibrahim Hashem**
 
