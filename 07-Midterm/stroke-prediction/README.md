@@ -267,18 +267,84 @@ MLzoomcamp-26_homework/
 
 ### Prerequisites
 
-- Python version compatible with the pinned dependencies in `requirements.txt`.
-- pip.
+- Python 3.14 (the project dependencies are pinned in `requirements.txt`).
+- pip (included with standard Python installations).
 - Docker, if you want to run the containerized application.
 - GitHub Codespaces or a local development environment.
 
-### Install Dependencies
+### 1. Clone the Repository
 
-Open a terminal in the `stroke-prediction` directory and run:
+If you have not cloned the repository yet:
 
 ```bash
-pip install -r requirements.txt
+git clone https://github.com/IBRHASHEM/MLzoomcamp-26_homework.git
+cd MLzoomcamp-26_homework/07-Midterm/stroke-prediction
 ```
+
+### 2. Create a Virtual Environment
+
+Create an isolated Python environment in the project directory:
+
+```bash
+python -m venv .venv
+```
+
+### 3. Activate the Virtual Environment
+
+**Windows — PowerShell:**
+
+```powershell
+.venv\\Scripts\\Activate.ps1
+```
+
+If PowerShell blocks script execution, allow activation for the current terminal session only:
+
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
+.venv\\Scripts\\Activate.ps1
+```
+
+**Windows — Command Prompt (CMD):**
+
+```cmd
+.venv\\Scripts\\activate.bat
+```
+
+**Linux / macOS / GitHub Codespaces:**
+
+```bash
+source .venv/bin/activate
+```
+
+When the environment is active, its name (usually `.venv`) appears at the beginning of your terminal prompt.
+
+### 4. Install Dependencies
+
+With the virtual environment activated, upgrade pip and install the pinned project dependencies:
+
+```bash
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+```
+
+### 5. Verify the Environment
+
+Check that Python and the required packages are available:
+
+```bash
+python --version
+python -m pip list
+```
+
+### 6. Deactivate the Virtual Environment
+
+When you have finished working on the project:
+
+```bash
+deactivate
+```
+
+> **Note:** Activate the virtual environment before running the training script or the Flask application. You need to create the environment and install dependencies only once; on later sessions, open the project directory, activate `.venv`, and continue working.
 
 ## 12. Training the Model
 
